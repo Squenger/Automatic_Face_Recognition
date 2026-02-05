@@ -5,11 +5,11 @@
 ## Requirements
 
 - Python >= 3.9
-- OpenCV 
+- OpenCV
 - PyQt6
 - NumPy
 
-### How to run 
+### How to run
 
 Launch the application by running:
 
@@ -25,7 +25,7 @@ You can also use the following scripts to launch the application on macOS:
 
 ## Data structure
 
-In order the application works correctly, images must be organized was following : 
+In order the application works correctly, images must be organized was following :
 
 
 ### 1. Known Faces (Training)
@@ -81,15 +81,11 @@ uvx pre-commit install
 uv sync --group Reconnaissance_Faciale_Automatique/test_reconnaissance_faciale_automatique
 uv run coverage run -m pytest -v
 ```
+### COVERAGE
 
-Tests cover:
-- Initialization: Ensures the manager starts with correct default paths and parameters.
-- Model Downloader: Mocks the verification and retrieval of ONNX models.
-- Model Loading: Validates the initialization of OpenCV’s YuNet detector and SFace recognizer.
-- Encoding Management: Tests successful signature loading and handles missing encoding files.
-- Renaming Logic: Verifies file renaming accuracy and collision handling.
-- Training (train_faces): Simulates directory scanning, face detection, and feature extraction.
-- Directory Processing (process_directory): Tests face identification in unknown image folders.
+```bash
+uv run coverage report
+```
 
 ### How to run type checking
 
@@ -100,13 +96,15 @@ uvx pyright reconnaissance_faciale_automatique --pythonpath .venv/bin/python
 ### How to build docs
 
 ```bash
-uv sync --group docs
-cd docs && uv run make html
+uv sync
+cd docs && uv run sphinx-build . _build
 ```
 
-### How to run autobuild for docs
+### How to run autobuild for docs 
 
 ```bash
-uv sync --group docs
-cd docs && make livehtml
+uv sync
+cd docs && uv run sphinx-autobuild --re-ignore generated --host 0.0.0.0 --watch ".." . _build
 ```
+
+http://localhost:8000 

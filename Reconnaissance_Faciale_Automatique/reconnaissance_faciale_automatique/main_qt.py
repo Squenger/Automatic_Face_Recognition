@@ -1,30 +1,45 @@
-import sys
 import os
+import sys
 
 # --- Correction pour MACOS / ANACONDA ---
 # MUST be set BEFORE importing PyQt6 and before Qt libraries load
-if sys.platform == 'darwin':
+if sys.platform == "darwin":
     # Force Qt to use our PyQt6 plugins, not conda's Qt5 plugins
     pyqt6_plugins = "/opt/anaconda3/lib/python3.13/site-packages/PyQt6/Qt6/plugins"
     pyqt6_lib = "/opt/anaconda3/lib/python3.13/site-packages/PyQt6/Qt6/lib"
-    
-    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = pyqt6_plugins
-    os.environ['QT_PLUGIN_PATH'] = pyqt6_plugins
-    os.environ['DYLD_FRAMEWORK_PATH'] = pyqt6_lib + ":" + os.environ.get('DYLD_FRAMEWORK_PATH', '')
-    os.environ['QT_QPA_PLATFORM'] = 'cocoa'
-    
+
+    os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = pyqt6_plugins
+    os.environ["QT_PLUGIN_PATH"] = pyqt6_plugins
+    os.environ["DYLD_FRAMEWORK_PATH"] = (
+        pyqt6_lib + ":" + os.environ.get("DYLD_FRAMEWORK_PATH", "")
+    )
+    os.environ["QT_QPA_PLATFORM"] = "cocoa"
+
     # Clear any old Qt settings
-    os.environ.pop('QT_SELECT', None)
+    os.environ.pop("QT_SELECT", None)
 # ---------------------------------------
 
-from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QPushButton, QLabel, QLineEdit, QFileDialog, QTextEdit,
-    QProgressBar, QGroupBox, QStyleFactory, QDoubleSpinBox, QMessageBox,
-    QDialog, QInputDialog
-)
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QDoubleSpinBox,
+    QFileDialog,
+    QGroupBox,
+    QHBoxLayout,
+    QInputDialog,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QStyleFactory,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 # Importation du gestionnaire de reconnaissance
 try:
@@ -32,10 +47,12 @@ try:
 except ImportError:
     from manager import FaceRecognizerManager
 
+
 class ImageViewerWindow(QDialog):
     """
     Fenêtre de visualisation des images traitées avec navigation.
     """
+
     def __init__(self, processed_images, parent=None):
         """
         :param processed_images: Liste de tuples (filepath, [noms reconnus])
@@ -43,17 +60,17 @@ class ImageViewerWindow(QDialog):
         super().__init__(parent)
         self.processed_images = processed_images
         self.current_index = 0
-        
+
         self.setWindowTitle("Visualisation des Résultats")
         self.resize(1000, 800)
-        
+
         self.init_ui()
         self.load_image()
-    
+
     def init_ui(self):
         """Construit l'interface de visualisation."""
         layout = QVBoxLayout(self)
-        
+
         # Titre avec les personnes reconnues
         self.title_label = QLabel()
         self.title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -61,61 +78,71 @@ class ImageViewerWindow(QDialog):
             "font-size: 18px; font-weight: bold; color: #5cd6ca; padding: 10px;"
         )
         layout.addWidget(self.title_label)
-        
+
         # Label pour afficher l'image
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image_label.setStyleSheet("background-color: #ecf0f1; border: 2px solid #bdc3c7;")
+        self.image_label.setStyleSheet(
+            "background-color: #ecf0f1; border: 2px solid #bdc3c7;"
+        )
         self.image_label.setMinimumSize(800, 600)
         self.image_label.setScaledContents(False)  # Pour garder le ratio
-        layout.addWidget(self.image_label, 1)  # stretch=1 pour prendre l'espace disponible
-        
+        layout.addWidget(
+            self.image_label, 1
+        )  # stretch=1 pour prendre l'espace disponible
+
         # Compteur d'images
         self.counter_label = QLabel()
         self.counter_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.counter_label.setStyleSheet("color: #7f8c8d; font-size: 12px; padding: 5px;")
+        self.counter_label.setStyleSheet(
+            "color: #7f8c8d; font-size: 12px; padding: 5px;"
+        )
         layout.addWidget(self.counter_label)
-        
+
         # Boutons de navigation
         nav_layout = QHBoxLayout()
-        
+
         self.btn_prev = QPushButton("⬅ Précédent")
         self.btn_prev.clicked.connect(self.show_previous)
-        
+
         self.btn_next = QPushButton("Suivant ➡")
         self.btn_next.clicked.connect(self.show_next)
-        
+
         self.btn_close = QPushButton("Fermer")
         self.btn_close.clicked.connect(self.close)
         self.btn_close.setStyleSheet("background-color: #e74c3c; color: white;")
-        
+
         nav_layout.addWidget(self.btn_prev)
         nav_layout.addStretch()
         nav_layout.addWidget(self.btn_close)
         nav_layout.addStretch()
         nav_layout.addWidget(self.btn_next)
-        
+
         layout.addLayout(nav_layout)
-        
+
         # Appliquer les styles aux boutons de navigation
-        self.btn_prev.setStyleSheet("background-color: #3498db; color: white; padding: 10px;")
-        self.btn_next.setStyleSheet("background-color: #3498db; color: white; padding: 10px;")
-    
+        self.btn_prev.setStyleSheet(
+            "background-color: #3498db; color: white; padding: 10px;"
+        )
+        self.btn_next.setStyleSheet(
+            "background-color: #3498db; color: white; padding: 10px;"
+        )
+
     def load_image(self):
         """Charge et affiche l'image courante."""
         if not self.processed_images:
             self.title_label.setText("Aucune image à afficher")
             return
-        
+
         filepath, recognized_names = self.processed_images[self.current_index]
-        
+
         # Afficher le titre avec les noms reconnus
         if recognized_names and recognized_names[0] != "Inconnu":
             names_str = ", ".join(recognized_names)
             self.title_label.setText(f"Personnes reconnues : {names_str}")
         else:
             self.title_label.setText("Aucune personne reconnue")
-        
+
         # Charger et afficher l'image
         if os.path.exists(filepath):
             pixmap = QPixmap(filepath)
@@ -126,45 +153,47 @@ class ImageViewerWindow(QDialog):
                 scaled_pixmap = pixmap.scaled(
                     self.image_label.size(),
                     Qt.AspectRatioMode.KeepAspectRatio,
-                    Qt.TransformationMode.SmoothTransformation
+                    Qt.TransformationMode.SmoothTransformation,
                 )
                 self.image_label.setPixmap(scaled_pixmap)
         else:
             self.image_label.setText("Fichier introuvable")
-        
+
         # Mettre à jour le compteur
         self.counter_label.setText(
             f"Image {self.current_index + 1} sur {len(self.processed_images)}"
         )
-        
+
         # Activer/désactiver les boutons selon la position
         self.btn_prev.setEnabled(self.current_index > 0)
         self.btn_next.setEnabled(self.current_index < len(self.processed_images) - 1)
-    
+
     def show_previous(self):
         """Affiche l'image précédente."""
         if self.current_index > 0:
             self.current_index -= 1
             self.load_image()
-    
+
     def show_next(self):
         """Affiche l'image suivante."""
         if self.current_index < len(self.processed_images) - 1:
             self.current_index += 1
             self.load_image()
-    
+
     def resizeEvent(self, a0):
         """Redimensionne l'image quand la fenêtre est redimensionnée."""
         super().resizeEvent(a0)
         self.load_image()
 
+
 class WorkerThread(QThread):
     """
     Gère l'exécution des tâches lourdes en arrière-plan pour éviter de figer l'interface.
     """
+
     progress_signal = pyqtSignal(str)
     """Signal émettant des messages de log (str) vers l'interface utilisateur."""
-    
+
     finished_signal = pyqtSignal()
     """Signal émis lorsque la tâche en arrière-plan est terminée."""
 
@@ -178,27 +207,33 @@ class WorkerThread(QThread):
         # Injecte signal.emit comme fonction de rappel (callback) pour la logique métier,
         # permettant à FaceRecognizerManager de communiquer avec l'interface.
         try:
-            self.task_function(*self.args, **self.kwargs, progress_callback=self.progress_signal.emit)
+            self.task_function(
+                *self.args, **self.kwargs, progress_callback=self.progress_signal.emit
+            )
         except Exception as e:
             self.progress_signal.emit(f"[ERREUR CRITIQUE] {str(e)}")
         finally:
             self.finished_signal.emit()
 
+
 class FaceRecoApp(QMainWindow):
     """
     Fenêtre principale de l'application de reconnaissance faciale.
     """
+
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Leomine - Reconnaissance Faciale Automatisée")
         self.resize(900, 700)
-        
+
         # Initialisation du gestionnaire (les chemins par défaut sont désormais gérés dans FaceRecognizerManager)
-        self.base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+        self.base_dir = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "../../")
+        )
         self.manager = FaceRecognizerManager()
 
-        self.worker = None 
+        self.worker = None
 
         self.init_ui()
         self.apply_styles()
@@ -214,25 +249,29 @@ class FaceRecoApp(QMainWindow):
         config_layout = QVBoxLayout()
 
         # Répertoire des Visages Connus (Source pour l'apprentissage)
-        self.path_known = self.create_file_input("Dossier des Visages Connus :", "known_faces")
-        config_layout.addLayout(self.path_known['layout'])
+        self.path_known = self.create_file_input(
+            "Dossier des Visages Connus :", "known_faces"
+        )
+        config_layout.addLayout(self.path_known["layout"])
 
         # Répertoire des Visages Inconnus (Cible pour le tri)
         self.path_unknown = self.create_file_input("Dossier à Trier :", "unknown_faces")
-        config_layout.addLayout(self.path_unknown['layout'])
+        config_layout.addLayout(self.path_unknown["layout"])
 
         # Seuil de Similarité
         threshold_layout = QHBoxLayout()
         threshold_label = QLabel("Seuil de Similarité (0.1 - 0.9) :")
-        threshold_label.setStyleSheet("color: black;") 
+        threshold_label.setStyleSheet("color: black;")
         self.threshold_spin = QDoubleSpinBox()
         self.threshold_spin.setRange(0.1, 0.9)
         self.threshold_spin.setSingleStep(0.05)
         self.threshold_spin.setValue(0.4)
-        self.threshold_spin.setToolTip("Plus bas = Plus strict (Moins de faux positifs). Plus haut = Plus tolérant.")
-        
+        self.threshold_spin.setToolTip(
+            "Plus bas = Plus strict (Moins de faux positifs). Plus haut = Plus tolérant."
+        )
+
         self.threshold_spin.valueChanged.connect(self.update_threshold)
-        
+
         threshold_layout.addWidget(threshold_label)
         threshold_layout.addWidget(self.threshold_spin)
         threshold_layout.addStretch()
@@ -247,26 +286,30 @@ class FaceRecoApp(QMainWindow):
 
         self.btn_check_models = QPushButton("1. Vérifier Modèles")
         self.btn_check_models.clicked.connect(self.run_check_models)
-        
+
         self.btn_train = QPushButton("2. Apprendre Visages")
         self.btn_train.clicked.connect(self.run_training)
-        
+
         self.btn_process = QPushButton("3. Lancer le Tri")
         self.btn_process.clicked.connect(self.run_processing)
-        
+
         self.btn_view_results = QPushButton("4. Voir les Résultats")
         self.btn_view_results.clicked.connect(self.show_results)
         self.btn_view_results.setEnabled(False)  # Désactivé par défaut
 
         # Style spécifique pour les boutons
-        self.btn_process.setStyleSheet("background-color: #2ecc71; color: white; font-weight: bold;")
-        self.btn_view_results.setStyleSheet("background-color: #9b59b6; color: white; font-weight: bold;")
-        
+        self.btn_process.setStyleSheet(
+            "background-color: #2ecc71; color: white; font-weight: bold;"
+        )
+        self.btn_view_results.setStyleSheet(
+            "background-color: #9b59b6; color: white; font-weight: bold;"
+        )
+
         actions_layout.addWidget(self.btn_check_models)
         actions_layout.addWidget(self.btn_train)
         actions_layout.addWidget(self.btn_process)
         actions_layout.addWidget(self.btn_view_results)
-        
+
         actions_group.setLayout(actions_layout)
         main_layout.addWidget(actions_group)
 
@@ -293,9 +336,9 @@ class FaceRecoApp(QMainWindow):
 
         self.log_area = QTextEdit()
         self.log_area.setReadOnly(True)
-        
+
         self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 0) # Mode indéterminé par défaut
+        self.progress_bar.setRange(0, 0)  # Mode indéterminé par défaut
         self.progress_bar.setTextVisible(False)
         self.progress_bar.hide()
 
@@ -305,7 +348,9 @@ class FaceRecoApp(QMainWindow):
         main_layout.addWidget(log_group)
 
         # Message d'initialisation
-        self.log_message("Interface prête. Veuillez vérifier les modèles avant de commencer.")
+        self.log_message(
+            "Interface prête. Veuillez vérifier les modèles avant de commencer."
+        )
 
     def create_file_input(self, label_text, default_path):
         """Crée une rangée de widgets pour la sélection de fichiers."""
@@ -313,22 +358,24 @@ class FaceRecoApp(QMainWindow):
         label = QLabel(label_text)
         label.setStyleSheet("color: black;")
         label.setFixedWidth(180)
-        
+
         line_edit = QLineEdit()
         line_edit.setText(os.path.join(self.base_dir, default_path))
-        
+
         btn = QPushButton("Parcourir...")
         btn.clicked.connect(lambda: self.browse_folder(line_edit))
-        
+
         layout.addWidget(label)
         layout.addWidget(line_edit)
         layout.addWidget(btn)
-        
-        return {'layout': layout, 'input': line_edit}
+
+        return {"layout": layout, "input": line_edit}
 
     def browse_folder(self, line_edit_widget):
         """Ouvre une boîte de dialogue pour sélectionner un répertoire."""
-        folder = QFileDialog.getExistingDirectory(self, "Choisir un dossier", line_edit_widget.text())
+        folder = QFileDialog.getExistingDirectory(
+            self, "Choisir un dossier", line_edit_widget.text()
+        )
         if folder:
             line_edit_widget.setText(folder)
 
@@ -350,7 +397,7 @@ class FaceRecoApp(QMainWindow):
         self.btn_train.setEnabled(enable)
         self.btn_process.setEnabled(enable)
         # Note: btn_view_results reste géré séparément
-        
+
         if not enable:
             self.progress_bar.show()
         else:
@@ -375,11 +422,13 @@ class FaceRecoApp(QMainWindow):
         self.start_worker(self.manager.check_and_download_models)
 
     def run_training(self):
-        directory = self.path_known['input'].text()
+        directory = self.path_known["input"].text()
         if not os.path.isdir(directory):
-            QMessageBox.warning(self, "Erreur", "Le dossier des visages connus n'existe pas.")
+            QMessageBox.warning(
+                self, "Erreur", "Le dossier des visages connus n'existe pas."
+            )
             return
-            
+
         self.log_message(f"--- Démarrage de l'apprentissage sur : {directory} ---")
         self.start_worker(self.manager.train_faces, directory)
 
@@ -395,12 +444,16 @@ class FaceRecoApp(QMainWindow):
         if not self.manager.known_features:
             success, count = self.manager.load_encodings()
             if success:
-                self.log_message(f"Base de données chargée automatiquement : {count} visages.")
+                self.log_message(
+                    f"Base de données chargée automatiquement : {count} visages."
+                )
             else:
-                self.log_message("ATTENTION : Aucune signature de visage chargée. Veuillez lancer l'apprentissage d'abord.")
+                self.log_message(
+                    "ATTENTION : Aucune signature de visage chargée. Veuillez lancer l'apprentissage d'abord."
+                )
                 return
 
-        directory = self.path_unknown['input'].text()
+        directory = self.path_unknown["input"].text()
         if not os.path.isdir(directory):
             QMessageBox.warning(self, "Erreur", "Le dossier cible n'existe pas.")
             return
@@ -423,21 +476,23 @@ class FaceRecoApp(QMainWindow):
         # Activer le bouton de visualisation si des images ont été traitées
         if self.manager.processed_images:
             self.btn_view_results.setEnabled(True)
-            self.log_message(f"{len(self.manager.processed_images)} images disponibles pour visualisation.")
-    
+            self.log_message(
+                f"{len(self.manager.processed_images)} images disponibles pour visualisation."
+            )
+
     def show_results(self):
         """Affiche la fenêtre de visualisation des résultats."""
         if not self.manager.processed_images:
             QMessageBox.information(
                 self,
                 "Aucun résultat",
-                "Aucune image n'a été traitée. Veuillez d'abord lancer le tri."
+                "Aucune image n'a été traitée. Veuillez d'abord lancer le tri.",
             )
             return
-        
+
         viewer = ImageViewerWindow(self.manager.processed_images, self)
         viewer.exec()
-    
+
     def apply_styles(self):
         """Applique les styles CSS globaux."""
         self.setStyleSheet("""
@@ -461,34 +516,55 @@ class FaceRecoApp(QMainWindow):
 
         # Obtenir la liste unique des noms pour aider l'utilisateur
         names = sorted(list(set(self.manager.known_names)))
-        
-        name, ok = QInputDialog.getItem(self, "Supprimer une personne", 
-                                       "Sélectionnez le nom à supprimer :", names, 0, False)
-        
+
+        name, ok = QInputDialog.getItem(
+            self,
+            "Supprimer une personne",
+            "Sélectionnez le nom à supprimer :",
+            names,
+            0,
+            False,
+        )
+
         if ok and name:
-            confirm = QMessageBox.question(self, "Confirmation", 
-                                         f"Voulez-vous vraiment supprimer toutes les signatures de '{name}' ?",
-                                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            
+            confirm = QMessageBox.question(
+                self,
+                "Confirmation",
+                f"Voulez-vous vraiment supprimer toutes les signatures de '{name}' ?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            )
+
             if confirm == QMessageBox.StandardButton.Yes:
                 deleted, num = self.manager.delete_person(name)
                 if deleted:
-                    self.log_message(f"Succès : {num} signature(s) de '{name}' supprimée(s).")
-                    QMessageBox.information(self, "Terminé", f"{num} signature(s) de '{name}' supprimée(s).")
+                    self.log_message(
+                        f"Succès : {num} signature(s) de '{name}' supprimée(s)."
+                    )
+                    QMessageBox.information(
+                        self, "Terminé", f"{num} signature(s) de '{name}' supprimée(s)."
+                    )
                 else:
-                    self.log_message(f"Erreur : Impossible de trouver '{name}' dans la base.")
+                    self.log_message(
+                        f"Erreur : Impossible de trouver '{name}' dans la base."
+                    )
 
     def clear_database_ui(self):
         """Supprime l'intégralité de la base de données après confirmation."""
-        confirm = QMessageBox.question(self, "ATTENTION", 
-                                     "Voulez-vous vraiment vider TOUTE la base de données ?\nCette action est irréversible et détrui tous les visages enregistrés.",
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        
+        confirm = QMessageBox.question(
+            self,
+            "ATTENTION",
+            "Voulez-vous vraiment vider TOUTE la base de données ?\nCette action est irréversible et détrui tous les visages enregistrés.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        )
+
         if confirm == QMessageBox.StandardButton.Yes:
             if self.manager.clear_database():
                 self.log_message("Base de données vidée.")
-                QMessageBox.information(self, "Terminé", "La base de données a été réinitialisée.")
+                QMessageBox.information(
+                    self, "Terminé", "La base de données a été réinitialisée."
+                )
                 self.btn_view_results.setEnabled(False)
+
 
 def run():
     app = QApplication(sys.argv)
@@ -496,6 +572,7 @@ def run():
     window = FaceRecoApp()
     window.show()
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     run()
