@@ -157,8 +157,6 @@
 
 **Couverture** : **18 tests** avec **86% de couverture** sur `manager.py`
 
-**Documentation complète** : Voir [`TESTS.md`](TESTS.md) pour tous les détails
-
 #### Tests de Fonctionnalités de Base (8 tests)
 
 1. **`test_manager_init`** : Vérifie l'initialisation correcte du gestionnaire
@@ -173,7 +171,7 @@
 7. **`test_train_faces`** : Teste le processus d'entraînement (mocké)
 8. **`test_process_directory`** : Teste le traitement d'un répertoire (mocké)
 
-#### Tests de Gestion d'Erreurs et Cas Limites 
+#### Tests de Gestion d'Erreurs et Cas Limites
 
 9. **`test_check_and_download_models_download_error`** : Gestion des erreurs réseau lors du téléchargement
 10. **`test_load_models_failure`** : Gestion des exceptions lors du chargement des modèles
@@ -467,8 +465,3 @@ Cela évite d'avoir à stocker les vecteurs de caractéristiques dans le code so
 - Type hints are consistent
 - New lines are covered by tests
 - If documentation is added, it does not raise a warning in sphinx
-
----
-
-
-

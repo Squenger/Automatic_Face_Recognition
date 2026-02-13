@@ -211,10 +211,9 @@ class FaceRecognizerManager:
     def _save_database(self) -> tuple[str | None, str | None]:
         r"""Sauvegarde les encodages faciales dans deux fichiers: pickle et texte.
 
-        Persiste les données d'entraînement (vecteurs de caractéristiques et noms associés) dans:
-        - Un fichier pickle contenant les paires (features, names) pour la reconnaissance
-        - Un fichier texte contenant la liste unique et triée des noms pour consultation
-
+        Persiste les données d'entraînement (vecteurs de caractéristiques et noms associés).
+        Un fichier pickle contient les paires (features, names) pour la reconnaissance.
+        Un fichier texte contient la liste unique et triée des noms pour consultation.
         Crée automatiquement le répertoire de destination s'il n'existe pas.
 
         Notes:
@@ -349,7 +348,9 @@ class FaceRecognizerManager:
                             self.known_names.append(name)
                             faces_found += 1
                             if progress_callback:
-                                progress_callback(f"  ✓ Visage détecté dans : {filename}")
+                                progress_callback(
+                                    f"  ✓ Visage détecté dans : {filename}"
+                                )
                     else:
                         if progress_callback:
                             progress_callback(

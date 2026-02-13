@@ -19,7 +19,7 @@ Installation des Dépendances
 
    # Avec uv (recommandé)
    uv sync
-   
+
    # Ou avec pip
    pip install -e .
 
@@ -95,7 +95,7 @@ Ou double-cliquez sur ``Lancer_Interface.command`` (macOS).
 2. Sélectionnez votre dossier avec les visages connus
 3. Cliquez sur **"2. Apprendre Visages"**
 4. Le système va :
-   
+
    - Parcourir chaque sous-dossier
    - Détecter les visages dans chaque image
    - Extraire les caractéristiques faciales
@@ -110,9 +110,9 @@ Ou double-cliquez sur ``Lancer_Interface.command`` (macOS).
 1. Cliquez sur **"Parcourir"** à côté de "Dossier à traiter"
 2. Sélectionnez votre dossier avec les visages inconnus
 3. Ajustez le **seuil de reconnaissance** si nécessaire (0.0 à 1.0)
-   
+
    - **0.3-0.4** : Strict (peu de faux positifs)
-   - **0.4-0.5** : Équilibré 
+   - **0.4-0.5** : Équilibré
    - **0.5+** : Permissif (plus de détections)
 
 4. Cliquez sur **"3. Lancer le Tri"**
@@ -148,7 +148,7 @@ Vider la Base Complète
    Cela supprime TOUS les visages enregistrés !
 
 BONUS :Mode Webcam (Temps Réel) (optionnel non implémenté)
--------------------------
+------------------------------------------------------------
 
 Lancement
 ~~~~~~~~~
@@ -163,7 +163,7 @@ Utilisation
 ~~~~~~~~~~~
 
 - Les visages détectés sont entourés d'un rectangle :
-  
+
   - **Vert** : Personne reconnue (nom + score affiché)
   - **Rouge** : Inconnu
 
@@ -171,9 +171,3 @@ Utilisation
 
 .. note::
    Assurez-vous d'avoir entraîné le système (Étape 3) avant d'utiliser le mode webcam !
-
-
-
-
-
-

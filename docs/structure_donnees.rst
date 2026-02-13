@@ -195,9 +195,3 @@ Propriétés
 - **Dimension** : 128
 - **Type** : ``numpy.ndarray`` de ``float32``
 - **Normalisation** : Vecteur unitaire (norme L2 = 1)
-
-
-
-
-
-

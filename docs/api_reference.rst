@@ -27,39 +27,41 @@ Initialisation
 ~~~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.__init__
+   :no-index:
 
 Gestion des Modèles
 ~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.check_and_download_models
+   :no-index:
 .. automethod:: FaceRecognizerManager.load_models
+   :no-index:
 
 Gestion des Encodages
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.load_encodings
+   :no-index:
 
 Entraînement
 ~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.train_faces
+   :no-index:
 
 Traitement d'Images
 ~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.process_directory
+   :no-index:
 
 Gestion de la Base de Données
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. automethod:: FaceRecognizerManager.delete_person
+   :no-index:
 .. automethod:: FaceRecognizerManager.clear_database
-
-Méthodes Privées
-~~~~~~~~~~~~~~~~
-
-.. automethod:: FaceRecognizerManager._save_database
-.. automethod:: FaceRecognizerManager._rename_file
+   :no-index:
 
 Exemple d'Utilisation
 ---------------------
