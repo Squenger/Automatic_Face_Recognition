@@ -1,8 +1,7 @@
 import os
 import sys
 
-# --- Correction pour MACOS / ANACONDA ---
-# MUST be set BEFORE importing PyQt6 and before Qt libraries load
+# Correction pour MACOS / ANACONDA
 if sys.platform == "darwin":
     # Force Qt to use our PyQt6 plugins, not conda's Qt5 plugins
     pyqt6_plugins = "/opt/anaconda3/lib/python3.13/site-packages/PyQt6/Qt6/plugins"
@@ -17,7 +16,6 @@ if sys.platform == "darwin":
 
     # Clear any old Qt settings
     os.environ.pop("QT_SELECT", None)
-# ---------------------------------------
 
 from PyQt6.QtCore import Qt, QThread, pyqtSignal
 from PyQt6.QtGui import QPixmap

@@ -1,7 +1,6 @@
 Guide Utilisateur
 ==================
 
-Ce guide vous accompagne pas à pas dans l'utilisation du système de reconnaissance faciale.
 
 Installation
 ------------

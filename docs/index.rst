@@ -61,6 +61,7 @@ Documentation
    :caption: Documentation Technique
 
    architecture
+   api_reference
    tests
 
 

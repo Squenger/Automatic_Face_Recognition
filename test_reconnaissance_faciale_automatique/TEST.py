@@ -131,48 +131,71 @@ def test_train_faces(mock_imread, mock_listdir, mock_isdir, mock_exists, manager
             assert manager.known_features == ["feature_vector"]
             assert mock_pickle_dump.called
 
-
 @patch("os.path.exists")
 @patch("os.listdir")
 @patch("cv2.imread")
 def test_process_directory(mock_imread, mock_listdir, mock_exists, manager):
-    """Teste le traitement d'un répertoire de visages inconnus."""
+    """
+    Teste la logique de traitement d'un dossier contenant des photos inconnues.
+    L'objectif est de vérifier que le programme identifie et renomme correctement les fichiers.
+    """
+    
+    # PRÉPARATION 
+    # On simule une base de données de visages déjà connus
     manager.known_features = ["known_feat"]
     manager.known_names = ["Aimine"]
+    
+    # On remplace les modèles réels par des objets factices (MagicMock)
+    # Cela évite de charger des modèles lourds pendant les tests
     manager.detector = MagicMock()
     manager.recognizer = MagicMock()
 
+    # SIMULATION DU SYSTÈME DE FICHIERS 
+    # On fait croire au programme que le dossier existe
     mock_exists.return_value = True
+    # On définit la liste des fichiers que le programme va "trouver" dans le dossier
     mock_listdir.return_value = ["unknown.jpg"]
 
+    #  SIMULATION D'UNE IMAGE OPEN-CV 
+    # On crée un objet qui imite une image numpy (avec une taille/shape)
     mock_img = MagicMock()
     mock_img.shape = (100, 100, 3)
     mock_imread.return_value = mock_img
 
-    # Mock de détection : un visage trouvé
+    # SIMULATION 
+    # 1. Le détecteur renvoie un objet mocké
     manager.detector.detect.return_value = (None, [MagicMock()])
+    
+    # 2. Le recognizer extrait une signature faciale fictive
     manager.recognizer.alignCrop.return_value = MagicMock()
     manager.recognizer.feature.return_value = "unknown_feat"
 
-    # Mock de reconnaissance : score > seuil
+    # 3. On simule un MATCH réussi :
+    # On force un score de 0.9 (90%) alors que le seuil de tolérance est à 0.4
     manager.recognizer.match.return_value = 0.9
     manager.threshold = 0.4
 
+    # EXÉCUTION
+    # On "intercepte" la méthode _rename_file pour voir si elle est appelée
+    # sans qu'elle ne modifie réellement de fichiers sur le disque
     with patch.object(manager, "_rename_file") as mock_rename:
         mock_rename.return_value = "Aimine.jpg"
+        
+        # On lance la fonction principale
         manager.process_directory("/tmp/unknown")
 
-        assert mock_rename.called
-        # Vérifier qu'il a passé le bon ensemble de noms trouvés
+        # VÉRIFICATIONS (Assertions) 
+        # On vérifie que la logique a bien mené à la décision de renommer le fichier
+        assert mock_rename.called, "La fonction _rename_file aurait dû être appelée"
+        
+        # On vérifie que le nom "Aimine" a bien été transmis à la fonction de renommage
         args, _ = mock_rename.call_args
-        assert args[2] == {"Aimine"}
+        assert args[2] == {"Aimine"}, f"Le nom attendu était Aimine, mais on a eu : {args[2]}"
 
 
 @patch("os.path.exists")
 @patch("urllib.request.urlretrieve")
-def test_check_and_download_models_download_error(
-    mock_urlretrieve, mock_exists, manager
-):
+def test_check_and_download_models_download_error(mock_urlretrieve, mock_exists, manager):
     """Teste le téléchargement de modèles quand le téléchargement échoue."""
     callback_messages = []
 
@@ -321,3 +344,4 @@ def test_process_directory_no_encodings(manager):
     manager.process_directory("/tmp/unknown", progress_callback=callback)
 
     assert any("Aucune signature chargée" in msg for msg in callback_messages)
+

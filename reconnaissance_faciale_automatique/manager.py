@@ -45,19 +45,6 @@ class FaceRecognizerManager:
                 Les valeurs proches de 1.0 sont plus strictes. Plage recommandée: [0.3, 0.6].
                 Type: :obj:`float`
 
-        Examples:
-            Initialisation avec paramètres par défaut:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-
-            Initialisation avec répertoires personnalisés:
-
-            >>> manager = FaceRecognizerManager( # doctest: +SKIP
-            ...     model_dir="/path/to/models",
-            ...     encoding_file="/path/to/encodings.pkl",
-            ...     threshold=0.5
-            ... )
-
         Returns:
             ``None``. L'objet est initialisé et prêt pour l'entraînement et la reconnaissance.
         """
@@ -115,18 +102,6 @@ class FaceRecognizerManager:
                 Appelée périodiquement pour informer de la vérification et du téléchargement.
                 Type: :obj:`callable` acceptant un :obj:`str`, ou ``None``
 
-        Examples:
-            Vérification simple sans feedback:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> success = manager.check_and_download_models() # doctest: +SKIP
-
-            Avec une fonction de rappel pour le suivi:
-
-            >>> def progress(msg): # doctest: +SKIP
-            ...     print(f"Status: {msg}")
-            >>> manager.check_and_download_models(progress_callback=progress) # doctest: +SKIP
-
         Returns:
             ``True`` si tous les modèles sont disponibles et téléchargés avec succès,
             ``False`` en cas d'erreur de téléchargement ou d'accès au répertoire.
@@ -168,15 +143,6 @@ class FaceRecognizerManager:
 
         Args:
             Aucun paramètre.
-
-        Examples:
-            Chargement des modèles après initialisation:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> if manager.load_models(): # doctest: +SKIP
-            ...     print("Modèles chargés avec succès")
-            ... else:
-            ...     print("Erreur lors du chargement")
 
         Returns:
             ``True`` si le chargement des deux modèles réussit sans exception,
@@ -221,14 +187,6 @@ class FaceRecognizerManager:
         Args:
             Aucun paramètre.
 
-        Examples:
-            Chargement des encodages existants:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> success, count = manager.load_encodings() # doctest: +SKIP
-            >>> if success: # doctest: +SKIP
-            ...     print(f"Chargé {count} visages connus")
-
         Returns:
             Un tuple ``(success, count)`` où:
 
@@ -269,14 +227,6 @@ class FaceRecognizerManager:
         Args:
             Aucun paramètre. Utilise les attributs ``self.known_features``,
             ``self.known_names`` et ``self.encoding_file``.
-
-        Examples:
-            Sauvegarde manuelle (typiquement automatique):
-
-            >>> manager.known_features = [...]  # Après entraînement # doctest: +SKIP
-            >>> manager.known_names = [...] # doctest: +SKIP
-            >>> pkl_path, txt_path = manager._save_database() # doctest: +SKIP
-            >>> print(f"Sauvegardé dans: {pkl_path}") # doctest: +SKIP
 
         Returns:
             Tuple ``(pkl_path, txt_path)`` avec:
@@ -327,19 +277,6 @@ class FaceRecognizerManager:
             progress_callback: Fonction de rappel recevant des messages de progression en chaîne.
                 Type: :obj:`callable` acceptant un :obj:`str`, ou ``None``
 
-        Examples:
-            Entraînement simple:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> manager.check_and_download_models() # doctest: +SKIP
-            >>> success = manager.train_faces("/path/to/known_faces") # doctest: +SKIP
-
-            Avec suivi de la progression:
-
-            >>> def on_progress(msg): # doctest: +SKIP
-            ...     print(f"[INFO] {msg}")
-            >>> manager.train_faces("/path/to/known_faces", progress_callback=on_progress) # doctest: +SKIP
-
         Returns:
             ``True`` si l'entraînement réussit et les données sont sauvegardées,
             ``False`` si le répertoire n'existe pas, aucun visage n'est détecté, ou erreur de chargement des modèles.
@@ -378,6 +315,10 @@ class FaceRecognizerManager:
             if progress_callback:
                 progress_callback(f"Analyse de : {name} ({idx + 1}/{total_new})")
 
+            images_processed = 0
+            images_skipped = 0
+            faces_found = 0
+
             for filename in os.listdir(dir_path):
                 if not filename.lower().endswith((".jpg", ".jpeg", ".png")):
                     continue
@@ -385,7 +326,12 @@ class FaceRecognizerManager:
                 filepath = os.path.join(dir_path, filename)
                 img = cv2.imread(filepath)
                 if img is None:
+                    images_skipped += 1
+                    if progress_callback:
+                        progress_callback(f"  ⚠️  Image non lisible : {filename}")
                     continue
+
+                images_processed += 1
 
                 # Détection faciale
                 h, w, _ = img.shape
@@ -401,6 +347,20 @@ class FaceRecognizerManager:
 
                             self.known_features.append(face_feature)
                             self.known_names.append(name)
+                            faces_found += 1
+                            if progress_callback:
+                                progress_callback(f"  ✓ Visage détecté dans : {filename}")
+                    else:
+                        if progress_callback:
+                            progress_callback(
+                                f"  ✗ Aucun visage détecté dans : {filename}"
+                            )
+
+            # Résumé pour cette personne
+            if progress_callback:
+                progress_callback(
+                    f"  → {name} : {faces_found} visage(s) sur {images_processed} image(s) traitée(s)"
+                )
 
         if not self.known_features:
             msg = "ERREUR : Aucun visage n'a été trouvé dans le dossier. La sauvegarde est annulée pour éviter d'effacer la base existante."
@@ -434,15 +394,6 @@ class FaceRecognizerManager:
             name_to_delete: Nom exact de la personne à supprimer de la base.
                 Doit correspondre exactement aux noms stockés.
                 Type: :obj:`str`
-
-        Examples:
-            Suppression d'une personne:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> manager.load_encodings() # doctest: +SKIP
-            >>> success, count = manager.delete_person("Alice") # doctest: +SKIP
-            >>> if success: # doctest: +SKIP
-            ...     print(f"Supprimé {count} encodages de Alice")
 
         Returns:
             Tuple ``(success, count)`` avec:
@@ -481,13 +432,6 @@ class FaceRecognizerManager:
 
         Args:
             Aucun paramètre.
-
-        Examples:
-            Vidage complet de la base:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> manager.clear_database() # doctest: +SKIP
-            >>> print("Base de données vidée") # doctest: +SKIP
 
         Returns:
             ``True`` si l'opération réussit (les fichiers sont supprimés ou n'existent pas).
@@ -528,22 +472,6 @@ class FaceRecognizerManager:
             progress_callback: Fonction optionnelle recevant des messages de progression en chaîne.
                 Appelée tous les 5 fichiers traités pour éviter les surcharges.
                 Type: :obj:`callable` acceptant un :obj:`str`, ou ``None``
-
-        Examples:
-            Traitement simple:
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> manager.load_encodings() # doctest: +SKIP
-            >>> manager.process_directory("/path/to/images") # doctest: +SKIP
-            >>> print(f"Images traitées: {len(manager.processed_images)}") # doctest: +SKIP
-
-            Avec suivi détaillé:
-
-            >>> def on_progress(msg): # doctest: +SKIP
-            ...     print(f"Progress: {msg}")
-            >>> manager.process_directory("/path/to/images", progress_callback=on_progress) # doctest: +SKIP
-            >>> for filepath, names in manager.processed_images: # doctest: +SKIP
-            ...     print(f"{filepath}: {', '.join(names)}")
 
         Returns:
             ``None``. Les résultats sont stockés dans ``self.processed_images``
@@ -663,17 +591,6 @@ class FaceRecognizerManager:
                 Type: :obj:`str`
             found_names: Ensemble (set) des noms de personnes identifiées dans l'image.
                 Type: :obj:`set[str]`
-
-        Examples:
-            Renommage simple (usage interne):
-
-            >>> manager = FaceRecognizerManager() # doctest: +SKIP
-            >>> new_name = manager._rename_file( # doctest: +SKIP
-            ...     "/path/to/images",
-            ...     "photo.jpg",
-            ...     {"Alice", "Bob"}
-            ... )
-            >>> print(new_name)  # "Alice_Bob.jpg" # doctest: +SKIP
 
         Returns:
             ``str``: Nouveau nom du fichier si le renommage réussit,

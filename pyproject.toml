@@ -40,6 +40,9 @@ docs = [
     "sphinx-favicon",
     "sphinx-argparse",
 ]
+dev = [
+    "pytest-cov>=7.0.0",
+]
 
 [tool.uv]
 default-groups = [
