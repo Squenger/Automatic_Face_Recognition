@@ -1,4 +1,19 @@
-# Guide Utilisateur
+# Système de Reconnaissance Faciale Automatique
+
+Ce projet présente une application concrète de reconnaissance faciale développée en Python. L'objectif est de fournir un outil capable d'identifier des individus sur des photos ou en temps réel via une webcam, afin de faciliter notamment le tri automatique de larges volumes d'images. 
+
+En combinant les modèles de Deep Learning YuNet (pour la détection) et SFace (pour la reconnaissance), l'application démontre la mise en place d'un pipeline de vision par ordinateur complet : de la gestion d'une base de données de visages à l'extraction de caractéristiques, le tout rendu accessible via une interface utilisateur intuitive.
+
+### Aperçu du projet
+
+**Interface principale et résultats d'analyse :**
+![Interface graphique](exemples/interface.png)
+![Résultat de détection](exemples/resultat.png)
+
+**Démonstration en temps réel (Webcam) :**
+![Démo Webcam](exemples/WEBCAM.mov)
+
+---
 
 ## Installation
 
@@ -72,7 +87,7 @@ Ou double-cliquez sur `Lancer_Interface.command` (macOS).
 2. Les modèles ONNX seront téléchargés automatiquement si nécessaire
 3. Attendez le message de confirmation
 
-> **Note** : Les modèles (YuNet + SFace) pèsent environ 39 MB au total.
+> **Note** : Les modèles (YuNet + SFace) pèsent environ 39 MB au total. À noter que si vous possédez déjà les fichiers du projet `Face_recognition_deep_learning`, il est possible de les utiliser directement pour éviter le téléchargement. Le chargement de ces fichiers existants doit cependant se faire manuellement, le système ne les récupérant pas automatiquement.
 
 ### Étape 3 : Entraînement
 
